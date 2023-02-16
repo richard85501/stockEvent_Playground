@@ -1,0 +1,29 @@
+input {
+  margin: 6px 8px;
+}
+
+button {
+  margin: 6px 8px;
+}
+
+.info {
+  margin: 24px;
+}
+
+tbody {
+  width: 100%;
+  td {
+    white-space: nowrap;
+    width: 100px;
+    padding: 4px;
+    &.notMoving {
+      color: rgb(93, 64, 151);
+    }
+    &.grow {
+      color: red;
+    }
+    &.drop {
+      color: green;
+    }
+  }
+}

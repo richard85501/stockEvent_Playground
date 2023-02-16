@@ -6,8 +6,8 @@ export async function sendApiRequest(method, url, payload, isImage, isMultiple) 
   const getToken = getCookie.split(`; token=`);
   // const token = getToken[1];
   // const token =import.meta.env.VITE_TOKEN
-  const token =''
-  
+  const token = '';
+
   const settings = {
     method: method,
     // url: import.meta.env.VITE_REACT_APP_HRC_API_URL + url,
