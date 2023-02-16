@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 
-import { getDealerData, getEventList } from '../store/slice/dealer';
-import { useDispatch, useSelector } from 'react-redux';
+import {selectDealer,getDealerData,getThpTopTwenty } from '../store/slice/dealer';
+import { useDispatch,useSelector } from 'react-redux';
 
 const main = () => {
   const dispatch = useDispatch();
+  const { twenty } = useSelector(selectDealer);
 
   useEffect(() => {
-    dispatch(getEventList());
+    dispatch(getThpTopTwenty());
   }, []);
 
   return (
     <div>
-      <div>main</div>
+      <div>{JSON.stringify(twenty)}</div>
     </div>
   );
 };
