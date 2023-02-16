@@ -1,25 +1,47 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { sendGetRequest } from '../../api/helper';
+const token =import.meta.env.VITE_TOKEN
 
 // 卷商分點資料
 export const getDealerData = createAsyncThunk('dealer/getDealerData', async (par) => {
   const response = await sendGetRequest(
-    `/api/v4/data?dataset=TaiwanStockShareholding&data_id=2330&start_date=2023-02-01&end_date=2023-02-10&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyMy0wMi0xNSAxMDo1NTo0MSIsInVzZXJfaWQiOiJ3aW53aW5jaGFuZyIsImlwIjoiMTE0LjM0LjE2My4yMTgifQ.fAwetRAVXhpFy_rEJMZWNgfIzgkVRu1dPz3MZgaltp0`
+    `/api/v4/data?dataset=TaiwanStockTradingDailyReport&data_id=2330&start_date=2023-02-01&token=${token}`
   );
   return response;
 });
 
-//每天資訊
-export const getEventList = createAsyncThunk('dealer/eventList', async (par) => {
-  const response = await sendGetRequest(`/news/eventList`);
+//當日前20筆 成交量最高資料 
+export const getThpTopTwenty = createAsyncThunk('dealer/getThpTopTwenty', async (par) => {
+  const response = await sendGetRequest(`/exchangeReport/MI_INDEX20`);
+  console.log('e',response)
   return response;
 });
 
+//全部資料
+
 const dealerSlice = createSlice({
-  name: 'dealerSlice',
-  initialState: [],
-  reducers: {},
+  name: 'dealer',
+  initialState: {
+    twenty:null
+  },
+  reducers: {
+
+  },  
+  extraReducers: {
+     // UPDATE ABILITY
+     [getThpTopTwenty.pending]: (state) => {
+    },
+    [getThpTopTwenty.fulfilled]: (state, { payload }) => {
+      console.log("payload",payload)
+      if (payload.status === 200) {
+        state.twenty = payload.data.data;
+      }
+    },
+    [getThpTopTwenty.rejected]: (state) => {
+    },
+  },
 });
 
 // export const { todoAdded, todoToggled } = dealerSlice.actions;
+export const selectDealer = (state) => state.dealer;
 export default dealerSlice.reducer;

@@ -5,11 +5,12 @@ export async function sendApiRequest(method, url, payload, isImage, isMultiple) 
   const getCookie = `; ${document.cookie}`;
   const getToken = getCookie.split(`; token=`);
   // const token = getToken[1];
-  const token =
-    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRlIjoiMjAyMy0wMi0xNSAxMDo1NDo1NCIsInVzZXJfaWQiOiJ3aW53aW5jaGFuZyIsImlwIjoiMTE0LjM0LjE2My4yMTgifQ.yV-OUJtDnxHeXPOBCrlKXsc1SemuVyceH3o7ghLZ6cw';
-
+  // const token =import.meta.env.VITE_TOKEN
+  const token =''
+  
   const settings = {
     method: method,
+    // url: import.meta.env.VITE_REACT_APP_HRC_API_URL + url,
     url: import.meta.env.VITE_OPEN_API + url,
   };
 
@@ -52,11 +53,13 @@ export async function sendApiRequest(method, url, payload, isImage, isMultiple) 
     settings.headers = {
       Accept: 'application/www-x-form-urlencoded',
       'Content-Type': 'application/www-x-form-urlencoded',
+      // Authorization: 'Bearer ' + token,
       Authorization: 'Bearer ' + token,
     };
   } else if (token && !isImage) {
     settings.headers = {
       'Content-Type': 'application/json',
+      // Authorization: 'Bearer ' + token,
       Authorization: 'Bearer ' + token,
     };
   } else {
