@@ -4,7 +4,6 @@ import styles from './style/Main.module.scss';
 import moment from 'moment';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectDealer, getThpTopTwenty, getSingleDataToList, updateTewnty, updateProfitPerDay, updateStocksList } from '../store/slice/dealer';
-import { sendGetRequest } from '../api/helper';
 
 import LineGraph from '../graph/LineGraph';
 
@@ -12,15 +11,16 @@ const main = () => {
   const dispatch = useDispatch();
   const { theTopDailyTwenty, stocksList, profit_per_day } = useSelector(selectDealer);
 
-  const INIT_FUNDS = 500; //初始資金
+  const INIT_FUNDS = 50000; //初始資金
   const INIT_TESTING_DAYS = 44; //預設從這麼多天前開始
-  const INIT_PERIOD_OF_TESTING = 3; //預設回測天數
+  const INIT_PERIOD_OF_TESTING = 3; //總計回測天數
+  const INIT_PERIOD_OF_BUYING = 3; //放置天數
 
   let startDayOfTesting = moment(new Date()).subtract(INIT_TESTING_DAYS, 'days').format('YYYYMMDD'); //轉換格式
   let lastDayOfTesting = moment(new Date()).add(INIT_TESTING_DAYS, 'days').format('YYYYMMDD'); //轉換格式
 
   const [date, setDate] = useState(startDayOfTesting); //正在計算前20的那一天
-  const [testDays, setTestDays] = useState(INIT_PERIOD_OF_TESTING); //總共要回測幾天
+  const [periodOfTesting, setPeriodOfTesting] = useState(INIT_PERIOD_OF_TESTING); //總計回測天數
 
   //開始計算
   const getThpTopTwentyHandler = () => {
@@ -39,15 +39,26 @@ const main = () => {
 
   //判斷是否為假日
   const getTheWeekOfDate = (date) => {
-    let add = 0;
     //星期天=0 星期六=6
-    let weeknumber = moment(date, 'YYYYMMDD').weekday();
-    if (weeknumber === 0) add = 1;
-    if (weeknumber === 6) add = 2;
-    return moment(date)
-      .add(testDays + add, 'days')
-      .format('YYYY-MM-DD');
+    //計算三天後 是星期幾 如果是假日去陣列裡面抓取下一筆資料的日期 (有點邪門)
+    let weeknumber = moment(date, 'YYYYMMDD').add(periodOfTesting, 'days').weekday();
+    if (weeknumber == 0 || weeknumber == 6){
+      let idx = stocksList.findIndex(item=>moment(item.date).format("YYYYMMDD")===date)
+      return stocksList[idx+periodOfTesting].date      
+    }else{
+      return moment(date).add(periodOfTesting, 'days').format('YYYY-MM-DD')
+    }
   };
+
+  const getPorfit = ()=>{
+    let a =[]
+    profit_per_day.forEach((item,idx)=>{
+      if(idx===0) a.push(item*INIT_FUNDS)
+      a.push(item*INIT_FUNDS+profit_per_day[idx])
+    })
+    
+    return a
+  }
 
   //得到第一天的前20筆資料 && 單獨的資料還未抓取
   useEffect(() => {
@@ -61,31 +72,24 @@ const main = () => {
   }, [theTopDailyTwenty, stocksList, date]);
 
   useEffect(() => {
-    var weeknumber = moment('20230220', 'YYYYMMDD').weekday();
-    console.log(weeknumber);
-    console.log('stocksList', stocksList);
     //theTopDailyTwenty 目前前20
     //stocksList 前20單筆資料
     if (theTopDailyTwenty && stocksList.length >= theTopDailyTwenty.length * 13) {
       // item[8] => 收盤價
       let profitArr = [];
-      console.log('date', date);
       theTopDailyTwenty.forEach((topdata) => {
-        console.log('topdata', topdata);
-        console.log('compare222', moment(date).add(testDays, 'days').format('YYYY-MM-DD'));
-        console.log('compare', getTheWeekOfDate(testDays));
-        console.log(
-          'single',
-          stocksList.find((item) => item.stock_id === topdata[1] && item.date === getTheWeekOfDate(date))
-        );
-        //得到回測天數之後的那筆資料的開盤值
-        let lastDayOpenPrice = stocksList.find((item) => item.stock_id === topdata[1] && item.date === getTheWeekOfDate(date)).open;
-        //
-        let profit = (lastDayOpenPrice * 1000 - topdata[8] * 1000) / 1000;
+        //得到回測最後一天資料的開盤值
+        // console.log("topdata",topdata)
+        // let lastDayData = stocksList.find((item) => item.stock_id === topdata[1] && item.date === getTheWeekOfDate(date));
+        let topDataIdxInStocksList = stocksList.findIndex((item) => item.stock_id === topdata[1] && moment(item.date).format("YYYYMMDD") === moment(date).format("YYYYMMDD"));
+
+        let lastDayData = stocksList[+topDataIdxInStocksList+(+INIT_PERIOD_OF_BUYING)] 
+
+        let profit = ((lastDayData?.open * 1000 - topdata[8] * 1000) /(lastDayData?.open * 1000));
         profitArr.push(profit);
         //把算出來的利潤 放進利潤陣列裡
-        dispatch(updateProfitPerDay([...profitArr, ...profit_per_day]));
       });
+      dispatch(updateProfitPerDay([...profit_per_day,...profitArr ]));
 
       dispatch(updateTewnty(null));
       dispatch(updateStocksList([]));
@@ -97,6 +101,8 @@ const main = () => {
   }, [theTopDailyTwenty, stocksList, date]);
 
   console.log('profit_per_day', profit_per_day);
+  console.log("stocksList",stocksList)
+  console.log("theTopDailyTwenty",theTopDailyTwenty)
 
   // const getDaysAfterHandler = (curId, isAfter) => {
   //   let data = stocksList.find((item) => item.stock_id === curId && item.date === moment(date).add(isAfter, 'days').format('YYYY-MM-DD'));
@@ -111,13 +117,14 @@ const main = () => {
   return (
     <div>
       <button onClick={() => getThpTopTwentyHandler()}>取得該日前20名成交量</button>
-      <label>{'回測天數=>'}</label>
+      <label>{'總計回測天數=>'}</label>
       <input
-        value={testDays}
+        value={periodOfTesting}
         placeholder='回測天數'
-        onKeyDown={(e) => {
-          if (e.keyCode === 13) setTestDays(e.target.value);
-        }}
+        onChange={(e) => setPeriodOfTesting(e.target.value)}
+        // onKeyDown={(e) => {
+        //   if (e.keyCode === 13) setTestDays(e.target.value);
+        // }}
       />
       <input
         placeholder='YYYYMMDD'
@@ -179,7 +186,7 @@ const main = () => {
         </table>
       </div>
       <div className={styles.chart}>
-        <LineGraph />
+        <LineGraph data={getPorfit()}/>
       </div>
     </div>
   );

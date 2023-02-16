@@ -52,7 +52,8 @@ const dealerSlice = createSlice({
     [getThpTopTwenty.fulfilled]: (state, { payload }) => {
       if (payload.stat == 'OK') {
         state.loading = false;
-        state.theTopDailyTwenty = payload.data.slice(0, 5);
+        // state.theTopDailyTwenty = payload.data.slice(0, 11);
+        state.theTopDailyTwenty = payload.data;
       }
     },
     [getThpTopTwenty.rejected]: (state) => {

@@ -9,10 +9,10 @@ const LineGraph = (props) => {
   const { data, labels, maintainAspectRatio = true } = props;
 
   const chartData = {
-    labels: ['r', 'r', 'uy', 'pp'],
+    labels: ['r', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy', 'pp', 'r', 'uy', 'pp','r', 'r', 'uy'],
     datasets: [
       {
-        data: [10, 60, 85, 95, 33, 44, 77],
+        data: data,
         fill: false,
         borderWidth: 4,
         pointBorderWidth: 0,
