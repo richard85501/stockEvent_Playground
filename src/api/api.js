@@ -8,11 +8,15 @@ export async function sendApiRequest(method, url, payload, isImage, isMultiple) 
   // const token =import.meta.env.VITE_TOKEN
   const token = '';
 
-  const settings = {
+  let settings = {
     method: method,
-    // url: import.meta.env.VITE_REACT_APP_HRC_API_URL + url,
-    url: import.meta.env.VITE_OPEN_API + url,
   };
+
+  if (url.includes('/api/v4/')) {
+    settings.url = import.meta.env.VITE_REACT_APP_HRC_API_URL + url;
+  } else {
+    settings.url = import.meta.env.VITE_OPEN_API + url;
+  }
 
   if (payload && isMultiple) {
     const formData = new FormData();

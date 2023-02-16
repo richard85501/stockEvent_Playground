@@ -8,10 +8,17 @@ export const getDealerData = createAsyncThunk('dealer/getDealerData', async (par
   return response;
 });
 
-//當日前20筆 成交量最高資料
+//當日前20筆成交量最高股票的資料
 export const getThpTopTwenty = createAsyncThunk('dealer/getThpTopTwenty', async (par) => {
   const response = await sendGetRequest(`/exchangeReport/MI_INDEX20?date=${par.date}`);
-  console.log('e', response);
+  return response.data;
+});
+
+//單一股票特定日期 股價資料
+export const getSingleDataToList = createAsyncThunk('dealer/getSingleDataToList', async ({ data_id, start_date, end_date }) => {
+  const response = await sendGetRequest(
+    `/api/v4/data?dataset=TaiwanStockPrice&data_id=${data_id}&start_date=${start_date}&end_date=${end_date}&token=${token}`
+  );
   return response.data;
 });
 
@@ -20,21 +27,56 @@ export const getThpTopTwenty = createAsyncThunk('dealer/getThpTopTwenty', async 
 const dealerSlice = createSlice({
   name: 'dealer',
   initialState: {
-    twenty: null,
+    loading: false,
+
+    theTopDailyTwenty: null,
+    stocksList: [],
+    profit_per_day: [], //{date:2021-01-03,profit:100,profitPercent:3%}
   },
-  reducers: {},
+  reducers: {
+    updateTewnty: (state, action) => {
+      state.theTopDailyTwenty = action.payload;
+    },
+    updateProfitPerDay: (state, action) => {
+      state.profit_per_day = action.payload;
+    },
+    updateStocksList: (state, action) => {
+      state.stocksList = action.payload;
+    },
+  },
   extraReducers: {
-    // UPDATE ABILITY
-    [getThpTopTwenty.pending]: (state) => {},
+    // 取得當日最前面十筆資料
+    [getThpTopTwenty.pending]: (state) => {
+      state.loading = true;
+    },
     [getThpTopTwenty.fulfilled]: (state, { payload }) => {
       if (payload.stat == 'OK') {
-        state.twenty = payload.data;
+        state.loading = false;
+        state.theTopDailyTwenty = payload.data.slice(0, 5);
       }
     },
-    [getThpTopTwenty.rejected]: (state) => {},
+    [getThpTopTwenty.rejected]: (state) => {
+      state.loading = false;
+    },
+
+    // 取得單一股票資料
+    [getSingleDataToList.pending]: (state) => {
+      state.loading = true;
+    },
+    [getSingleDataToList.fulfilled]: (state, { payload }) => {
+      if (payload.status == 200) {
+        state.loading = false;
+        let arr = [...state.stocksList];
+        arr = [...arr, ...payload.data];
+        state.stocksList = arr;
+      }
+    },
+    [getSingleDataToList.rejected]: (state) => {
+      state.loading = false;
+    },
   },
 });
 
-// export const { todoAdded, todoToggled } = dealerSlice.actions;
+export const { updateTewnty, updateProfitPerDay, updateStocksList } = dealerSlice.actions;
 export const selectDealer = (state) => state.dealer;
 export default dealerSlice.reducer;
