@@ -17,7 +17,7 @@ export const getThpTopTwenty = createAsyncThunk('dealer/getThpTopTwenty', async 
 //單一股票特定日期 股價資料
 export const getSingleDataToList = createAsyncThunk('dealer/getSingleDataToList', async ({ data_id, start_date, end_date }) => {
   const response = await sendGetRequest(
-    `/api/v4/data?dataset=TaiwanStockPrice&data_id=${data_id}&start_date=${start_date}&end_date=${end_date}&token=${token}`
+    `/api/v4/data?dataset=TaiwanStockPrice&data_id=${data_id}&start_date=${start_date}&end_date=${end_date}&device=web&token=${token}`
   );
   return response.data;
 });
